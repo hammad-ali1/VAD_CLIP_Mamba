@@ -7,7 +7,7 @@ import numpy as np
 import timm
 import torch
 from torch import nn
-import torchvision.transforms.functional_tensor as F_t
+import torchvision.transforms.functional as F_t
 
 from timm.models.vision_transformer import VisionTransformer
 from timm.models.registry import register_model
