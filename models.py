@@ -228,32 +228,17 @@ class CLIP(nn.Module):
 
         return x
 
-    def encode_text(self, text, ema=False):
-        if not ema:
-            x = self.token_embedding(text)  # [batch_size, n_ctx, d_model]
-            x = x + self.positional_embedding
-            x = x.permute(1, 0, 2)  # NLD -> LND
-            x = self.transformer(x)
-            x = x.permute(1, 0, 2)  # LND -> NLD
-            x = self.ln_final(x)
+    def encode_text(self, text, token):
+        #x = self.token_embedding(text).type(self.dtype)  # [batch_size, n_ctx, d_model]
+        x = text.type(self.dtype) + self.positional_embedding.type(self.dtype)
+        x = x.permute(1, 0, 2)  # NLD -> LND
+        x = self.transformer(x)
+        x = x.permute(1, 0, 2)  # LND -> NLD
+        x = self.ln_final(x).type(self.dtype)
 
-            # x.shape = [batch_size, n_ctx, transformer.width]
-            # take features from the eot embedding (eot_token is the highest number in each sequence)
-            x = x[torch.arange(x.shape[0]), text.argmax(dim=-1)] @ self.text_projection
-        else:
-            x = self.token_embedding_e(text)  # [batch_size, n_ctx, d_model]
-            x = x + self.positional_embedding_e
-            x = x.permute(1, 0, 2)  # NLD -> LND
-            x = self.transformer_e(x)
-            x = x.permute(1, 0, 2)  # LND -> NLD
-            x = self.ln_final_e(x)
-
-            # x.shape = [batch_size, n_ctx, transformer.width]
-            # take features from the eot embedding (eot_token is the highest number in each sequence)
-            x = (
-                x[torch.arange(x.shape[0]), text.argmax(dim=-1)]
-                @ self.text_projection_e
-            )
+        # x.shape = [batch_size, n_ctx, transformer.width]
+        # take features from the eot embedding (eot_token is the highest number in each sequence)
+        x = x[torch.arange(x.shape[0]), token.argmax(dim=-1)] @ self.text_projection
 
         return x
 
