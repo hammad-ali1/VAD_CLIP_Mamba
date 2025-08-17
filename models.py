@@ -218,6 +218,10 @@ class CLIP(nn.Module):
         mask.triu_(1)  # zero out the lower diagonal
         return mask
 
+    @property
+    def dtype(self):
+        return self.visual.patch_embed[0].weight.dtype
+
     def encode_image(self, image, ema=False):
         if not ema:
             x = self.visual(image)
